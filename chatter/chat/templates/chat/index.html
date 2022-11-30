@@ -1,26 +1,42 @@
-<!DOCTYPE html>
-<html>
+
+{% extends parent_template|default:'chat/chat_base.html' %}
+{% load static %}
+{% block content %}
 <head>
-    <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        #roomSelect {
+            height: 300px;
+        }
+    </style>
 </head>
-<body>
-    What chat room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
 
-    <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
+<main>
 
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/chat/' + roomName + '/';
-        };
-    </script>
-</body>
-</html>
+    <div class="container mt-3 p-5">
+        <h2>public-django-channels-chat</h2>
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <div class="mb-2">
+                    <label for="roomInput">Enter a room name to connect to it:</label>
+                    <input type="text" class="form-control" id="roomInput" placeholder="Room name">
+                    <small id="roomInputHelp" class="form-text text-muted">If the room doesn't exist yet, it will be created for you.</small>
+                </div>
+                <button type="button" id="roomConnect" class="btn btn-success">Connect</button>
+            </div>
+            <div class="col-12 col-md-4">
+                <label for="roomSelect">Active rooms</label>
+                <select multiple class="form-control" id="roomSelect">
+                    {% for room in rooms %}
+                        <option>{{ room }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="{% static 'js/messenger.js' %}"></script>
+
+{% endblock content %}
