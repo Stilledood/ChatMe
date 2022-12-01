@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from autoslug import AutoSlugField
 from PIL import Image
 from django.shortcuts import reverse
 from django.conf import settings
