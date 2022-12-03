@@ -23,7 +23,7 @@ class RoomCategory(models.Model):
 
 
 
-class UserChatRoom(models.Model):
+class ChatRoom(models.Model):
     '''Class to construct a model class for general chat rooms'''
 
     name = models.CharField(max_length=128)

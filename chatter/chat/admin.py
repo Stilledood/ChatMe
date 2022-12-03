@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import RoomCategory, ChatRoom
 
-# Register your models here.
+admin.site.register(RoomCategory)
+admin.site.register(ChatRoom)

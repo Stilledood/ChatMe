@@ -5,12 +5,16 @@ from django.contrib.auth.models import User
 from django.views.generic import View
 
 
-class ChatRoomList(View):
+class DefaultChatRoomList(View):
     '''Class to create a view to display all available chat rooms'''
 
+    model = models.ChatRoom
+    template = 'chat/chatroom_list.html'
 
+    def get(self,request):
+        room_list = self.model.objects.filter(admin_created_room=True)
+        return render(request,self.template, context={'rooms':room_list})
 
-    def get(self):
 
 def index(request):
     return render(request, 'chat/index.html')
