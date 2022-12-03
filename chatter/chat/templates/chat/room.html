@@ -40,19 +40,32 @@
             </div>
         </div>
         {{ room_name.name|json_script:"room-name" }}
+
     </div>
 
 </main>
 
 <script>
+        console.log("Js check from privateroom.js");
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
         ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         const chatSocket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/messenger/chat_room/" + roomName + "/");
+        let onlineUsersSelector = document.querySelector("#onlineUsersSelector");
+
+        function onlineUsersSelectorAdd(value) {
+            if (document.querySelector("option[value='" + value + "']")) return;
+            let newOption = document.createElement("option");
+
+            newOption.value = value;
+            newOption.innerHTML = value;
+            onlineUsersSelector.appendChild(newOption);
+        }
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log(data)
-            chatLog.value += data.message + "\n"
+            chatLog.value += data.user + ': ' + data.message + "\n";
+
         };
 
        chatSocket.onclose = function(e) {
@@ -61,7 +74,7 @@
             console.log("Reconnecting...");
             connect();
         }, 2000);
-    };
+        };
 
         document.querySelector('#chat-message-input').focus();
         document.querySelector('#chat-message-input').onkeyup = function(e) {
@@ -77,6 +90,25 @@
                 'message': message
             }));
             messageInputDom.value = '';
+        };
+        function onlineUsersSelectorAdd(value) {
+            if (document.querySelector("option[value='" + value + "']")) return;
+            let newOption = document.createElement("option");
+
+            newOption.value = value;
+            newOption.innerHTML = value;
+            onlineUsersSelector.appendChild(newOption);
+        }
+        function onlineUsersSelectorRemove(value) {
+        let oldOption = document.querySelector("option[value='" + value + "']");
+        if (oldOption !== null) oldOption.remove();
+        }
+
+
+        onlineUsersSelector.onchange = function() {
+            chatMessageInput.value = "/pm " + onlineUsersSelector.value + " ";
+            onlineUsersSelector.value = null;
+            chatMessageInput.focus();
         };
 </script>
 
