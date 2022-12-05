@@ -24,10 +24,10 @@
             <div class="col-12 col-md-8">
                 <div class="mb-2">
 
-                    <textarea class="form-control" id="chatLog" readonly></textarea>
+                    <textarea class="form-control z-depth-3" id="chatLog" readonly></textarea>
                 </div>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="chat-message-input" placeholder="Enter your chat message">
+                    <input type="text" class="form-control z-depth-1" id="chat-message-input" placeholder="Enter your chat message">
                     <div class="input-group-append">
                         <button class="btn btn-success" id="chat-message-submit" type="button">Send</button>
                     </div>
@@ -36,9 +36,7 @@
             <div class="col-12 col-md-4">
                 <label >Room Members</label>
                 <select multiple class="form-control" id="onlineUsersSelector">
-                    {% for user in users %}
-                        <option>{{user.username}}</option>
-                    {% endfor %}
+
                 </select>
             </div>
         </div>
@@ -68,7 +66,16 @@
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log(data)
-            chatLog.value += data.user + ': ' + data.message + "\n";
+            switch (data.type) {
+                case "chat_message":
+                    chatLog.value += data.user + ": " + data.message + "\n";
+                    break;
+                case "user_list":
+                    for (let i = 0; i < data.users.length; i++) {
+                        onlineUsersSelectorAdd(data.users[i]);
+                }
+                    break;
+            }
 
 
         };
