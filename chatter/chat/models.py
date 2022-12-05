@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from autoslug import AutoSlugField
 from django.shortcuts import reverse
+import uuid
 
 
 class RoomCategory(models.Model):
@@ -56,6 +57,26 @@ class ChatRoom(models.Model):
         self.save()
 
 
+class PrivateCharRoom(models.Model):
+    '''Class to create a model for private chat rooms'''
 
+    online = models.ManyToManyField(User,blank=True)
+    user1 = models.ForeignKey(User,on_delete=models.CASCADE)
+    user2= models.ForeignKey(User,on_delete=models.CASCADE)
+    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,unique=True)
+
+    def __str__(self):
+        return f"Direct chat between:{self.user1.username} and {self.user2.username}"
+
+    def get_online_count(self):
+        return self.online.count()
+
+    def join(self,user):
+        self.online.add(user)
+        self.save()
+
+    def leave(self,user):
+        self.online.remove(user)
+        self.save()
 
 
