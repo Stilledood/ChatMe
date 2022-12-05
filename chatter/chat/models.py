@@ -89,6 +89,21 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Public Message:{self.user.username}:{self.content} [{self.timestamp}]"
+
+
+class PrivateMessage(models.Model):
+    '''Class to construct a model for messages from private chat rooms'''
+
+    private_sender = models.ForeignKey(User,on_delete=models.CASCADE)
+    private_receiver = models.ForeignKey(User,on_delete=models.CASCADE)
+    privateroom = models.ForeignKey(ChatRoom,on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Private Message from :{self.private_sender.username} to {self.private_receiver.username}: {self.content} [{self.timestamp}]"
+
     
+
 
 
