@@ -61,8 +61,8 @@ class PrivateCharRoom(models.Model):
     '''Class to create a model for private chat rooms'''
 
     online = models.ManyToManyField(User,blank=True)
-    user1 = models.ForeignKey(User,on_delete=models.CASCADE)
-    user2= models.ForeignKey(User,on_delete=models.CASCADE)
+    user1 = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user1')
+    user2= models.ForeignKey(User,on_delete=models.CASCADE,related_name='user2')
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,unique=True)
 
     def __str__(self):
@@ -94,16 +94,16 @@ class Message(models.Model):
 class PrivateMessage(models.Model):
     '''Class to construct a model for messages from private chat rooms'''
 
-    private_sender = models.ForeignKey(User,on_delete=models.CASCADE)
-    private_receiver = models.ForeignKey(User,on_delete=models.CASCADE)
-    privateroom = models.ForeignKey(ChatRoom,on_delete=models.CASCADE)
+    private_sender = models.ForeignKey(User,on_delete=models.CASCADE,related_name='private_sender')
+    private_receiver = models.ForeignKey(User,on_delete=models.CASCADE, related_name='private_receiver')
+    private_room = models.ForeignKey(ChatRoom,on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Private Message from :{self.private_sender.username} to {self.private_receiver.username}: {self.content} [{self.timestamp}]"
 
-    
+
 
 
 
