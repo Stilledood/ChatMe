@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404,redirect
 from . import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -9,22 +9,31 @@ class DefaultChatRoomList(View):
     '''Class to create a view to display all available chat rooms'''
 
     model = models.ChatRoom
-    template = 'chat/chatroom_list.html'
+    template = 'chat/index.html'
 
     def get(self,request):
         room_list = self.model.objects.filter(admin_created_room=True)
         return render(request,self.template, context={'rooms':room_list})
 
 
-def index(request):
-    return render(request, 'chat/index.html')
+class ConnectToRoom(View):
+    model = models.ChatRoom
+    template = 'chat/room.html'
 
+    def get(self,request,room_name):
+        room = get_object_or_404(self.model, name=room_name)
+        users = room.online.all()
+        current_user = request.user
+        if current_user not in room.online.all():
+            room.join(current_user)
+        return render(request, template_name=self.template, context={'room_name':room,'users':users})
 
-def room(request, room_name):
-    room, created = models.ChatRoom.objects.get_or_create(name=room_name)
-    if room:
-        room.join(User.objects.get(pk=request.user.id))
-    elif created:
-        created.join(User.pk)
+class RoomDisconnect(View):
+    model = models.ChatRoom
 
-    return render(request, "chat/room.html", {"room_name": room})
+    def get(self,request,room_name):
+        room = get_object_or_404(self.model,name=room_name)
+        user = request.user
+        room.leave(user)
+        return redirect('messenger')
+

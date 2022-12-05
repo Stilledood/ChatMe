@@ -4,6 +4,6 @@ from . import views
 
 
 urlpatterns = [
-    path("messenger/", views.index, name ='index'),
-    path("messenger/chat_room/<str:room_name>/",views.room, name='room'),
+    path("messenger/", views.DefaultChatRoomList.as_view(), name ='index'),
+    path("messenger/chat_room/<str:room_name>/",views.ConnectToRoom.as_view(), name='room'),
 ]

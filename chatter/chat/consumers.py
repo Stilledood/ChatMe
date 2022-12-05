@@ -22,6 +22,8 @@ class ChatConsumer(WebsocketConsumer):
         self.room = ChatRoom.objects.get(name=self.room_name)
         print(self.room)
         print(self.room.online.all())
+        print(self.user.username)
+
 
         self.accept()
         #Join room group
@@ -30,7 +32,7 @@ class ChatConsumer(WebsocketConsumer):
         )
 
 
-        self.send(json.dumps({
+        self.send(text_data=json.dumps({
             'type':'user_list',
             'users':[user.username for user in self.room.online.all()]
         }))
@@ -50,11 +52,13 @@ class ChatConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,{"type":"chat_message", "message":message, 'user':self.user.username}
         )
-        self.send(text_data=json.dumps({'message':message}))
+        self.send(text_data=json.dumps({'message':message,'type':'chat_message', 'user':self.user.username}))
+
 
     # Receive messages from room group
     def chat_message(self,event):
         message = event['message']
+        user = event["user"]
 
         #Send message to websocket
-        self.send(text_data=json.dumps({'user':self.user.username, "message":message, 'type':'chat_message'}))
+        self.send(text_data=json.dumps({ "message":message,'user':user}))
