@@ -57,7 +57,7 @@ class ChatRoom(models.Model):
         self.save()
 
 
-class PrivateCharRoom(models.Model):
+class PrivateChatRoom(models.Model):
     '''Class to create a model for private chat rooms'''
 
     online = models.ManyToManyField(User,blank=True)
