@@ -17,29 +17,77 @@
 </head>
 
 <main>
-
-    <div class="container mt-3 p-5">
-        <h2>public-django-channels-chat</h2>
+    <div class="container">
         <div class="row">
-            <div class="col-12 col-md-8">
-                <div class="mb-2">
+          <div class="col-lg-12">
+            <div class="page-content">
 
-                    <textarea class="form-control z-depth-3" id="chatLog" readonly></textarea>
-                </div>
-                <div class="input-group">
-                    <input type="text" class="form-control z-depth-1" id="chat-message-input" placeholder="Enter your chat message">
-                    <div class="input-group-append">
-                        <button class="btn btn-success" id="chat-message-submit" type="button">Send</button>
+              <!-- ***** Banner Start ***** -->
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="main-profile ">
+                    <div class="row">
+                      <div class="col-lg-4">
+                        <img src="{{room_name.room_image.url}}" alt="" style="border-radius: 23px;">
+                      </div>
+                      <div class="col-lg-4 align-self-center">
+                        <div class="main-info header-text">
+                          <span>Online</span>
+                          <h4>{{room_name.name|capfirst}}</h4>
+                          <p></p>
+
+                        </div>
+                      </div>
+                      <div class="col-lg-4 align-self-center">
+                        <ul>
+                          <li> Members <span>{{room_name.get_online_count}}</span></li>
+                          <li>Online Members <span>16</span></li>
+                          <li>Number of Messages<span>None</span></li>
+
+                        </ul>
+                      </div>
                     </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="col-12 col-md-4">
-                <label >Room Members</label>
-                <select multiple class="form-control" id="onlineUsersSelector">
+          </div>
+        </div>
+    </div>
 
-                </select>
+ <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="featured-games header-text">
+                        <div class="heading-section">
+                            <h4> Chat</h4>
+                        </div>
+                        <textarea class="form-control z-depth-3" id="chatLog" readonly></textarea>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control z-depth-1" id="chat-message-input" placeholder="Enter your chat message">
+                        <div class="input-group-append">
+                            <button class="btn btn-success" id="chat-message-submit" type="button">Send</button>
+                        </div>
+                    </div>
+        </div>
+
+
+                <div class="col-lg-4">
+                  <div class="top-streamers">
+                    <div class="heading-section">
+                      <h4> Members</h4>
+                    </div>
+                        <select multiple class="form-control" id="onlineUsersSelector">
+                        </select>
+                  </div>
+                </div>
             </div>
         </div>
+ </div>
         {{ room_name.name|json_script:"room-name" }}
 
 

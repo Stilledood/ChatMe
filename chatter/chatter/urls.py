@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path,include,re_path
 from chat import urls  as chat_urls
 from user import urls as user_urls
+from django.conf.urls.static import static
+from django.conf import settings
 
 
 
@@ -26,4 +28,4 @@ urlpatterns = [
     path('user/',include(user_urls, namespace='dj-auth'))
 
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT )

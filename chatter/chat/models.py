@@ -11,6 +11,7 @@ class RoomCategory(models.Model):
 
     name = models.CharField(max_length=64, unique=True)
     slug = AutoSlugField(populate_from='name')
+    image = models.ImageField(upload_to='category_images',default='stream-8.jpg')
 
     def __str__(self):
         return f"Category:{self.slug}"
@@ -32,6 +33,7 @@ class ChatRoom(models.Model):
     room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE)
     admin_created_room = models.BooleanField(default=False)
+    room_image = models.ImageField(upload_to='room_images', default='clip-02.jpg')
 
     def __str__(self):
         return f"Room: {self.name}"
@@ -64,6 +66,7 @@ class PrivateChatRoom(models.Model):
     user1 = models.ForeignKey(User,on_delete=models.CASCADE,related_name='user1')
     user2= models.ForeignKey(User,on_delete=models.CASCADE,related_name='user2')
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False,unique=True)
+    room_image = models.ImageField(upload_to='private_room_images', default='popular-8.jpg')
 
     def __str__(self):
         return f"Direct chat between:{self.user1.username} and {self.user2.username}"
