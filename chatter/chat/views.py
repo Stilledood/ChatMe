@@ -3,6 +3,7 @@ from . import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.views.generic import View
+from .forms import ChatRoomForm
 
 
 class DefaultChatRoomList(View):
@@ -36,4 +37,38 @@ class RoomDisconnect(View):
         user = request.user
         room.leave(user)
         return redirect('messenger')
+
+
+class CreateRoomView(View):
+    '''Class to create a view to allow user to create rooms'''
+
+    model = models.ChatRoom
+    template = 'chat/create_room.html'
+    form_class = ChatRoomForm
+
+    def get(self,request):
+        return render(request,self.template,context={'form':self.form_class()})
+
+    def post(self,request):
+        bound_form = self.form_class(request.POST)
+        if bound_form.is_valid():
+            new_room = bound_form.save()
+            return redirect(new_room)
+        else:
+            return render(request,self.template,context={'form':bound_form})
+
+
+
+class CategoriesList(View):
+    '''Class to create a view to display all room categories from database'''
+
+    model = models.RoomCategory
+    template = 'chat/categories.html'
+
+    def get(self,request):
+        categories = self.model.objects.all()
+        return render(request,self.template,context={'categories':categories})
+
+
+
 

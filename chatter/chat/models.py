@@ -11,7 +11,7 @@ class RoomCategory(models.Model):
 
     name = models.CharField(max_length=64, unique=True)
     slug = AutoSlugField(populate_from='name')
-    image = models.ImageField(upload_to='category_images',default='stream-8.jpg')
+    image = models.ImageField(upload_to='category_images',default='stream-08.jpg')
 
     def __str__(self):
         return f"Category:{self.slug}"
