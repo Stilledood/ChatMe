@@ -85,6 +85,21 @@ class CategoriesList(View):
         categories = self.model.objects.all()
         return render(request,self.template,context={'categories':categories})
 
+class CategoryDetailsView(View):
+    '''Class to create a view to display all the rooms from a selected category'''
+
+    model = models.RoomCategory
+    template = 'char/category_details.html'
+
+    def get(self,request,name):
+
+        category = get_object_or_404(self.model, name=name)
+        rooms = category.chatroom_set.all()
+        context = {
+            'category' : category,
+            'rooms' : rooms
+        }
+        return render(request,self.template,context=context)
 
 
 
