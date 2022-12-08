@@ -96,6 +96,8 @@ class CategoriesList(View):
         categories = self.model.objects.all()
         return render(request,self.template,context={'categories':categories})
 
+
+
 class CategoryDetailsView(View):
     '''Class to create a view to display all the rooms from a selected category'''
 
