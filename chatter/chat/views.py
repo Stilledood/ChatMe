@@ -17,6 +17,17 @@ class DefaultChatRoomList(View):
         return render(request,self.template, context={'rooms':room_list})
 
 
+class RoomDetailsView(View):
+    '''Class to create a view to display all the informations about a room'''
+
+    model = models.ChatRoom
+    template = 'chat/room_details.html'
+
+    def get(self,request,room_name):
+        room = get_object_or_404(self.model, name=room_name)
+        return render(request,self.template,context={'room':room})
+
+
 class ConnectToRoom(View):
     model = models.ChatRoom
     template = 'chat/room.html'
