@@ -28,7 +28,7 @@ class RoomCategory(models.Model):
 class ChatRoom(models.Model):
     '''Class to construct a model class for general chat rooms'''
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128,unique=True)
     online = models.ManyToManyField(User,blank=True,related_name='members')
     room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE)

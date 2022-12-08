@@ -58,6 +58,22 @@ class CreateRoomView(View):
             return render(request,self.template,context={'form':bound_form})
 
 
+class DeleteRoomView(View):
+    template = 'chat/delete_room.html'
+    model = models.ChatRoom
+
+    def get(self,request,room_name):
+        room = get_object_or_404(self.model, name=room_name)
+        return render(request,self.template,context={'room':room})
+
+    def post(self,request,room_name):
+        room = get_object_or_404(self.model, name=room_name)
+        room.delete()
+        return redirect('messenger')
+
+
+
+
 
 class CategoriesList(View):
     '''Class to create a view to display all room categories from database'''
@@ -68,6 +84,7 @@ class CategoriesList(View):
     def get(self,request):
         categories = self.model.objects.all()
         return render(request,self.template,context={'categories':categories})
+
 
 
 
