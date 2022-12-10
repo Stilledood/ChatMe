@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap4',
     'chat',
-    'user'
+    'user',
+    'videochat'
 ]
 
 MIDDLEWARE = [
