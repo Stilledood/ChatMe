@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<head>
+    <style>
+        #chatLog {
+            height: 300px;
+            background-color: #FFFFFF;
+            resize: none;
+        }
+
+        #onlineUsersSelector {
+            height: 300px;
+        }
+    </style>
+</head>
+
+<main>
+
+    <div class="container mt-3 p-5">
+        <h2>Direct-django-channels-chat</h2>
+        <h2>Direct chat between {{ room.user1.username }} and {{ room.user2.username }}</h2>
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <div class="mb-2">
+                    <label for="chatLog">Direct Chat Room object ID: #{{ room.id }}</label>
+                    <textarea class="form-control" id="chatLog" readonly>
+                    {% for message in chat_messages %}
+                        {{ message.timestamp }}
+                        {{ message.private_sender.username }}: {{ message.content }}
+                    {% endfor %}
+                    </textarea>
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="chatMessageInput" placeholder="Enter your chat message">
+                    <div class="input-group-append">
+                        <button class="btn btn-success" id="chatMessageSend" type="button">Send</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <label for="onlineUsers">Online users</label>
+                <select multiple class="form-control" id="onlineUsersSelector">
+                </select>
+            </div>
+        </div>
+        {{ room.id|json_script:"private_room_id" }}
+    </div>
+
+</main>
+
+<script>
+        console.log("Js check from privateroom.js");
+        const private_room_id = JSON.parse(document.getElementById('private_room_id').textContent);
+        ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        const chatSocket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/messenger/private_room/" + private_room_id + "/");
+        let onlineUsersSelector = document.querySelector("#onlineUsersSelector");
+        let chatLog = document.querySelector("#chatLog");
+        let chatMessageInput = document.querySelector("#chatMessageInput");
+        let chatMessageSend = document.querySelector("#chatMessageSend");
+        let onlineUsersSelector = document.querySelector("#onlineUsersSelector");
+
+        function onlineUsersSelectorAdd(value) {
+            if (document.querySelector("option[value='" + value + "']")) return;
+            let newOption = document.createElement("option");
+
+            newOption.value = value;
+            newOption.innerHTML = value;
+            onlineUsersSelector.appendChild(newOption);
+        }
+        function connect() {
+            chatSocket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/messenger/private_room/" + private_room_id + "/");
+
+            chatSocket.onopen = function(e) {
+                console.log("Successfully connected to the WebSocket.");
+        }
+        chatMessageSend.onclick = function() {
+            if (chatMessageInput.value.length === 0) return;
+                chatSocket.send(JSON.stringify({
+                    "message": chatMessageInput.value,
+        }));
+                chatMessageInput.value = "";
+        };
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data)
+            switch (data.type) {
+                case "chat_message":
+                    chatLog.value += data.user + ": " + data.message + "\n";
+                    break;
+                case "user_list":
+                    for (let i = 0; i < data.users.length; i++) {
+                        onlineUsersSelectorAdd(data.users[i]);
+                }
+                    break;
+            }
+
+
+        };
+
+       chatSocket.onclose = function(e) {
+        console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
+        setTimeout(function() {
+            console.log("Reconnecting...");
+            connect();
+        }, 2000);
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                chatMessageSend.click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+        function onlineUsersSelectorAdd(value) {
+            if (document.querySelector("option[value='" + value + "']")) return;
+            let newOption = document.createElement("option");
+
+            newOption.value = value;
+            newOption.innerHTML = value;
+            onlineUsersSelector.appendChild(newOption);
+        }
+        function onlineUsersSelectorRemove(value) {
+        let oldOption = document.querySelector("option[value='" + value + "']");
+        if (oldOption !== null) oldOption.remove();
+        }
+
+
+        onlineUsersSelector.onchange = function() {
+            chatMessageInput.value = "/pm " + onlineUsersSelector.value + " ";
+            onlineUsersSelector.value = null;
+            chatMessageInput.focus();
+        };
+</script>
+
+{% endblock content %}

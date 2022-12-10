@@ -99,7 +99,7 @@ class PrivateMessage(models.Model):
 
     private_sender = models.ForeignKey(User,on_delete=models.CASCADE,related_name='private_sender')
     private_receiver = models.ForeignKey(User,on_delete=models.CASCADE, related_name='private_receiver')
-    private_room = models.ForeignKey(ChatRoom,on_delete=models.CASCADE)
+    private_room = models.ForeignKey(PrivateChatRoom,on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 

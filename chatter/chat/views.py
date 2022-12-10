@@ -96,21 +96,24 @@ class PrivateRoomView(View):
 
     def get(self,request,pk):
         current_user = request.user
+        print(current_user)
         other_user = User.objects.get(pk=pk)
+        print(other_user)
 
-        if not self.model.objects.filter(user1==current_user, user2=other_user).exists() and not self.model.objects.filter(user1=other_user,user2=current_user).exists():
+        if not self.model.objects.filter(user1=current_user, user2=other_user).exists() and not self.model.objects.filter(user1=other_user,user2=current_user).exists():
             room = self.model.objects.create(user1=current_user, user2=other_user)
-            return render(request, self.template_name, context={'room':room})
+            return render(request, self.template_user1, context={'room':room})
 
         elif self.model.objects.filter(user1=current_user, user2=other_user).exists():
-            room = self.model.get(user1=current_user, user2=other_user)
-            chat_messages = []
-            if current_user == room.user1:
-                chat_messages = models.PrivateMessage.objects.filter(private_room=room)
-                return render(request, self.template_user1,context={'room': room,
-                                                                    'chat_messages': chat_messages})
+            room = self.model.objects.get(user1=current_user, user2=other_user)
+            print(room)
+
+
+            chat_messages = models.PrivateMessage.objects.filter(private_room=room)
+            return render(request, self.template_user1,context={'room': room,
+                                                                'chat_messages': chat_messages})
         elif self.model.objects.filter(user1=other_user,user2=current_user).exists():
-            room = self.model.get(user1=other_user, user2=current_user)
+            room = self.model.objects.get(user1=other_user, user2=current_user)
             chat_messages = []
             if current_user == room.user2:
                 chat_messages = models.PrivateMessage.objects.filter(private_room=room)
