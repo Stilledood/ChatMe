@@ -74,6 +74,9 @@ class PrivateChatRoom(models.Model):
     def get_online_count(self):
         return self.online.count()
 
+    def get_absolute_url(self):
+        return reverse('private_room_view', kwargs={'room_id':self.id})
+
     def join(self,user):
         self.online.add(user)
         self.save()
