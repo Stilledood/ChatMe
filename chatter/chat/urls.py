@@ -10,7 +10,7 @@ urlpatterns = [
     path('messenger/chat_rooms/<str:room_name>/disconnect/',views.RoomDisconnect.as_view(), name='disconnect'),
     path('messenger/chat_rooms/<str:room_name>/delete/', views.DeleteRoomView.as_view(), name='delete_room'),
     path('messenger/chat_rooms/create/', views.CreateRoomView.as_view(), name= 'create_room'),
-    re_path(r'^messenger/private_room/(?P<pk>[0-9]+)/$', views.PrivateRoomCreate.as_view(), name='create_private_chat'),
+    path('messenger/private_room/create/', views.PrivateRoomCreate.as_view(), name='create_private_chat'),
 
     path('messenger/categories/', views.CategoriesList.as_view(), name='categories'),
     path('messenger/categories/<str:name>/', views.CategoryDetailsView.as_view(), name='category_details'),

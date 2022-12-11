@@ -95,29 +95,32 @@ class PrivateRoomCreate(View):
     template = 'chat/private_room_create.html'
     form = PrivateChatRoomForm
 
-    def get(self,request,pk):
-        user_model = get_user_model()
-        user2 = user_model.objects.get(pk=pk)
+    def get(self,request):
         return render(request,self.template,context={'form':self.form()})
 
-    def post(self, request,pk):
+    def post(self, request):
         user_model = get_user_model()
-        user2 = user_model.objects.get(pk=pk)
         bound_form = self.form(request.POST)
+
         if bound_form.is_valid():
+            username = bound_form.cleaned_data['username']
+            user2 = user_model.objects.get(username=username)
+
             if not self.model.objects.filter(user1=request.user, user2=user2).exists() and  not self.model.objects.filter(user1=user2, user2=request.user).exists():
-                new_private_room = bound_form.save()
+                new_private_room = self.model.objects.create(user1=request.user, user2=user2)
+                print(new_private_room)
                 new_private_room.save()
                 new_private_room.join(request.user)
                 new_private_room.join(user2)
                 return redirect(new_private_room)
             else:
-                if self.model.objects(user1=request.user, user2=user2).exists():
-                    private_room = self.model.get(user1=request.user, user2=user2)
+                if self.model.objects.filter(user1=request.user, user2=user2).exists():
+                    private_room = self.model.objects.get(user1=request.user, user2=user2)
                     return redirect(private_room)
-                if self.model.objects(user1=user2, user2=request.user).exists():
+                if self.model.objects.filter(user1=user2, user2=request.user).exists():
                     private_room = self.model.objects.get(user1=user2,user2=request.user)
                     return redirect(private_room)
+
         else:
             return render(request,self.template,context={'form':bound_form})
 
