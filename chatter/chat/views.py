@@ -96,16 +96,15 @@ class PrivateRoomCreate(View):
     form = PrivateChatRoomForm
 
     def get(self,request):
+        print(True)
         return render(request,self.template,context={'form':self.form()})
 
     def post(self, request):
         user_model = get_user_model()
         bound_form = self.form(request.POST)
-
         if bound_form.is_valid():
             username = bound_form.cleaned_data['username']
             user2 = user_model.objects.get(username=username)
-
             if not self.model.objects.filter(user1=request.user, user2=user2).exists() and  not self.model.objects.filter(user1=user2, user2=request.user).exists():
                 new_private_room = self.model.objects.create(user1=request.user, user2=user2)
                 print(new_private_room)
@@ -116,10 +115,11 @@ class PrivateRoomCreate(View):
             else:
                 if self.model.objects.filter(user1=request.user, user2=user2).exists():
                     private_room = self.model.objects.get(user1=request.user, user2=user2)
-                    return reverse('private_chat_room',kwargs={'pk':new_private_room.pk})
+
+                    return redirect(private_room)
                 if self.model.objects.filter(user1=user2, user2=request.user).exists():
                     private_room = self.model.objects.get(user1=user2,user2=request.user)
-                    return reverse('private_chat_room',kwargs={'pk':new_private_room.pk,'user1':private_room.user1,'user2':private_room.user2})
+                    return redirect(private_room)
 
         else:
             return render(request,self.template,context={'form':bound_form})
@@ -134,10 +134,13 @@ class PrivateRoomView(View):
     model = models.PrivateChatRoom
 
     def get(self,request,pk):
+        user = request.user
         room = get_object_or_404(self.model,pk=pk)
         messages = models.PrivateMessage.objects.filter(private_room = room.pk)
-
-        return render(request,self.template,context={'room':room,'messages':messages})
+        if room.user1 == user or room.user2 == user:
+            return render(request,self.template,context={'room':room,'messages':messages})
+        else:
+            return redirect('messenger')
 
 
 

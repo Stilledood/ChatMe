@@ -94,7 +94,7 @@ class DirectChatConsumer(WebsocketConsumer):
         self.room_group_name =f"chat_{self.room_name}"
         self.room = PrivateChatRoom.objects.get(pk=self.room_name)
         self.user = self.scope['user']
-        print(self.user)
+
 
         if self.user == self.room.user1:
             self.other_user = User.objects.get(pk=self.room.user2.pk)
