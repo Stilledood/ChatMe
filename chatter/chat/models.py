@@ -29,8 +29,8 @@ class ChatRoom(models.Model):
     '''Class to construct a model class for general chat rooms'''
 
     name = models.CharField(max_length=128,unique=True)
-    online = models.ManyToManyField(User,blank=True,related_name='members')
-    room_owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    online = models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='members')
+    room_owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE)
     admin_created_room = models.BooleanField(default=False)
     room_image = models.ImageField(upload_to='room_images', default='clip-02.jpg')
@@ -39,7 +39,7 @@ class ChatRoom(models.Model):
         return f"Room: {self.name}"
 
     def get_absolute_url(self):
-        return reverse('user_chatroom_details', kwargs={'pk':self.pk})
+        return reverse('room_details', kwargs={'room_name':self.name})
 
     def get_update_url(self):
         return reverse('user_chatroom_update', kwargs={'pk':self.pk})

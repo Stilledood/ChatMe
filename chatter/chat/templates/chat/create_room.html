@@ -18,6 +18,7 @@
                           <form action="{% url 'create_room'%}" method="post">
                             {% csrf_token %}
                                 {{form|crispy}}
+                              <button type="submit">Create Room</button>
                           </form>
                       </div>
             </div>

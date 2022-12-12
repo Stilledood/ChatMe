@@ -6,6 +6,7 @@ from django.views.generic import View
 from .forms import ChatRoomForm,PrivateChatRoomForm
 from django.http import Http404
 from django.contrib.auth import get_user_model
+from operator import attrgetter
 
 
 # Public Room Views
@@ -16,7 +17,10 @@ class DefaultChatRoomList(View):
     template = 'chat/index.html'
 
     def get(self,request):
-        room_list = self.model.objects.filter(admin_created_room=True)
+        room_list = self.model.objects.all()
+        print(room_list)
+        room_top_users = sorted(room_list,key=lambda x: x.online.count(),reverse=True)
+        print(room_top_users)
         return render(request,self.template, context={'rooms':room_list})
 
 
@@ -66,7 +70,10 @@ class CreateRoomView(View):
     def post(self,request):
         bound_form = self.form_class(request.POST)
         if bound_form.is_valid():
-            new_room = bound_form.save()
+            user=request.user
+            new_room = bound_form.save(False)
+            new_room.room_owner = user
+            new_room.save()
             return redirect(new_room)
         else:
             return render(request,self.template,context={'form':bound_form})
