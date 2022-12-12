@@ -135,7 +135,9 @@ class PrivateRoomView(View):
 
     def get(self,request,pk):
         room = get_object_or_404(self.model,pk=pk)
-        return render(request,self.template,context={'room':room})
+        messages = models.PrivateMessage.objects.filter(private_room = room.pk)
+
+        return render(request,self.template,context={'room':room,'messages':messages})
 
 
 
