@@ -1,4 +1,4 @@
-from django.shortcuts import render,get_object_or_404,redirect
+from django.shortcuts import render,get_object_or_404,redirect,reverse
 from . import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -112,14 +112,14 @@ class PrivateRoomCreate(View):
                 new_private_room.save()
                 new_private_room.join(request.user)
                 new_private_room.join(user2)
-                return redirect(new_private_room)
+                return reverse('private_chat_room',kwargs={'pk':new_private_room.pk})
             else:
                 if self.model.objects.filter(user1=request.user, user2=user2).exists():
                     private_room = self.model.objects.get(user1=request.user, user2=user2)
-                    return redirect(private_room)
+                    return reverse('private_chat_room',kwargs={'pk':new_private_room.pk})
                 if self.model.objects.filter(user1=user2, user2=request.user).exists():
                     private_room = self.model.objects.get(user1=user2,user2=request.user)
-                    return redirect(private_room)
+                    return reverse('private_chat_room',kwargs={'pk':new_private_room.pk,'user1':private_room.user1,'user2':private_room.user2})
 
         else:
             return render(request,self.template,context={'form':bound_form})
@@ -130,38 +130,16 @@ class PrivateRoomCreate(View):
 class PrivateRoomView(View):
     '''Class to create a view to display/create a private room between 2 users'''
 
-    template_user1 = 'chat/userchat1.html'
-    template_user2 = 'chat/userchat2.html'
+    template = 'chat/privatechat.html'
     model = models.PrivateChatRoom
 
     def get(self,request,pk):
-        current_user = request.user
-        print(current_user)
-        other_user = User.objects.get(pk=pk)
-        print(other_user)
-
-        if not self.model.objects.filter(user1=current_user, user2=other_user).exists() and not self.model.objects.filter(user1=other_user,user2=current_user).exists():
-            room = self.model.objects.create(user1=current_user, user2=other_user)
-            return render(request, self.template_user1, context={'room':room})
-
-        elif self.model.objects.filter(user1=current_user, user2=other_user).exists():
-            room = self.model.objects.get(user1=current_user, user2=other_user)
-            print(room)
+        room = get_object_or_404(self.model,pk=pk)
+        return render(request,self.template,context={'room':room})
 
 
-            chat_messages = models.PrivateMessage.objects.filter(private_room=room)
-            return render(request, self.template_user1,context={'room': room,
-                                                                'chat_messages': chat_messages})
-        elif self.model.objects.filter(user1=other_user,user2=current_user).exists():
-            room = self.model.objects.get(user1=other_user, user2=current_user)
-            chat_messages = []
-            if current_user == room.user2:
-                chat_messages = models.PrivateMessage.objects.filter(private_room=room)
-                return render(request, self.template_user2, context={'room':room,
-                                                                     'chat_messages':chat_messages})
 
-        else:
-            raise Http404('User not authorized for this chatroom')
+
 
 
 

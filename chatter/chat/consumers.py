@@ -79,7 +79,7 @@ class ChatConsumer(WebsocketConsumer):
 class DirectChatConsumer(WebsocketConsumer):
     '''Class to create a consumer for private chats between 2 users'''
 
-    def __str__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(args,kwargs)
         self.user = None
         self.other_username = None
@@ -111,6 +111,17 @@ class DirectChatConsumer(WebsocketConsumer):
             'users':[user.username for user in self.room.online.all()]
         }))
 
+        if self.user.is_authenticated:
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type':'user_join',
+                    'user':self.user.username
+                }
+            )
+            self.room.online.add(self.user)
+
+
 
     def disconnect(self,close_code):
         self.room = PrivateChatRoom.objects.get(pk=self.room_name)
@@ -130,7 +141,7 @@ class DirectChatConsumer(WebsocketConsumer):
             self.room_group_name,
             {
                 'user':self.user.username,
-
+                'type':'chat_message',
                 'message':message
             },
         )
