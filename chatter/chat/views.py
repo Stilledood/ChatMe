@@ -23,7 +23,7 @@ class DefaultChatRoomList(View):
 
         return render(request,self.template, context={'rooms': room_list,
                                                       'top_rooms': room_top_users,
-                                                      'recente_rooms': recent_rooms})
+                                                      'recent_rooms': recent_rooms})
 
 
 class RoomDetailsView(View):
