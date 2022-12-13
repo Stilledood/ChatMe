@@ -18,10 +18,12 @@ class DefaultChatRoomList(View):
 
     def get(self,request):
         room_list = self.model.objects.all()
-        print(room_list)
         room_top_users = sorted(room_list,key=lambda x: x.online.count(),reverse=True)
-        print(room_top_users)
-        return render(request,self.template, context={'rooms':room_list})
+        recent_rooms = room_list[:3]
+
+        return render(request,self.template, context={'rooms': room_list,
+                                                      'top_rooms': room_top_users,
+                                                      'recente_rooms': recent_rooms})
 
 
 class RoomDetailsView(View):
