@@ -34,6 +34,12 @@ class ChatRoom(models.Model):
     category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE)
     admin_created_room = models.BooleanField(default=False)
     room_image = models.ImageField(upload_to='room_images', default='clip-02.jpg')
+    date_created = models.DateTimeField(auto_now_add=True)
+
+
+    class Meta:
+        ordering = ['-date_created','name']
+        get_latest_by ='date_created'
 
     def __str__(self):
         return f"Room: {self.name}"
