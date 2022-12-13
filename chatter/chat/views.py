@@ -35,7 +35,9 @@ class AllRoomsView(View):
 
     def get(self,request):
         all_rooms = self.model.objects.all()
-        top_rooms = sorted(all_rooms,key=lambda x: x.onlines.count(), reverse=True)
+        top_rooms = sorted(all_rooms,key=lambda x: x.online.count(), reverse=True)[:5]
+
+        recent_rooms = all_rooms[:5]
         paginator = Paginator(all_rooms,self.paginated_by)
         page_number = request.GET.get(self.page_kwarg)
         try:
@@ -59,7 +61,9 @@ class AllRoomsView(View):
             'paginator' : paginator,
             'previous_page_url' : previous_page_url,
             'next_page_url' : next_page_url,
-            'rooms' : page
+            'rooms' : page,
+            'top_rooms': top_rooms,
+            'recent_rooms':recent_rooms
         }
 
         return render(request,self.template_name,context=context)
