@@ -3,54 +3,93 @@
 
 {% block content %}
 
-<main>
-    <div class="container" display="flex" >
-        <div class="row">
+<div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-content">
+          <div class="row">
+            <div class="col-lg-8">
+              <div class="featured-games header-text">
+                <div class="heading-section">
+                  <h4><em>Most Active </em> Categories</h4>
+                </div>
+                <div class="owl-features owl-carousel">
+                  {% for category in active_categories %}
+                  <div class="item">
+                    <div class="thumb">
+                      <img src="{{category.image.url}}" height="360px" alt="">
+
+                    </div>
+                    <h4>{{category.name}}<br><span>Rooms: </span></h4>
+                    <ul>
+                      <li><br> </li>
+                      <li><i class="fa fa-star"></i> {{category.chatroom_set.count}}</li>
+                    </ul>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="top-streamers">
+                <div class="heading-section">
+                  <h4><em>Recent</em> Rooms</h4>
+                </div>
+                <ul>
+                  {% for room in rooms %}
+                  <li>
+                    <span>01</span>
+                    <img src="{{room.room_image.url}}" alt="" style="max-width: 46px; border-radius: 50%; margin-right: 15px;">
+                    <h6><i class="fa fa-check"></i>{{room.name}}</h6>
+                    <div class="main-button">
+                      <a href="#">Join</a>
+                    </div>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+                 <!-- ***** Live Stream Start ***** -->
+          <div class="live-stream">
             <div class="col-lg-12">
-            <div class="page-content">
-              <div class="row">
-                <div class="col-lg-12">
-                  <div class="feature-banner header-text">
-                    <div class="row">
+              <div class="heading-section">
+                <h4><em>Most Popular</em> Live Stream</h4>
+              </div>
+            </div>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-lg-3 col-sm-6">
+                <div class="item">
+                  <div class="thumb">
+                    <img src="{{category.image.url}}" alt="">
+                    <div class="hover-effect">
+                      <div class="content">
+                        <div class="live">
+                          <a href="#">Live</a>
+                        </div>
+
+                      </div>
                     </div>
                   </div>
+                  <div class="down-content">
+
+                    <span><i class="fa fa-check"></i> Rooms: {{category.chatroom_set.count}}</span>
+                    <h4>{{category.name}}</h4>
+                  </div>
                 </div>
-                     <div class="game-details">
-                            <div class="row">
-                              <div class="col-lg-12">
-                                <h2>All  Categories</h2>
-                              </div>
 
-                                <div class="content">
-                                  <div class="row">
-                                  {% for category in categories %}
-                                    <div class="col-lg-4">
-                                      <img src={{category.image.url}}" alt="" style="border-radius: 23px; margin-bottom: 30px;">
-                                    </div>
-                                       <div class="row">
-                                            <div class="col-lg-4">
-                                                <div class="left-info">
-                                                    <div class="left">
-                                                        <h4>Fortnite</h4>
-                                                        <span>Sandbox</span>
-                                                    </div>
-                                                     <ul>
-                                                        <li><i class="fa fa-star"></i> 4.8</li>
-                                                        <li><i class="fa fa-download"></i> 2.3M</li>
-                                                     </ul>
-                                                </div>
-                                            </div>
-                                       </div>
-                                  {% endfor %}
-                                </div>
-                              </div>
-                            </div>
-                     </div>
+              </div>
+            {% endfor %}
             </div>
+
+
             </div>
+          </div>
+          <!-- ***** Live Stream End ***** -->
         </div>
+      </div>
     </div>
+</div>
 
-
-</main>
 {% endblock content %}

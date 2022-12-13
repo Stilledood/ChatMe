@@ -167,7 +167,11 @@ class CategoriesList(View):
 
     def get(self,request):
         categories = self.model.objects.all()
-        return render(request,self.template,context={'categories':categories})
+        most_active_categories = sorted(categories,key=lambda x: x.chatroom_set.count(),reverse=True)
+        recent_rooms = models.ChatRoom.objects.all()[:5]
+        return render(request,self.template,context={'categories':categories,
+                                                     'active_categories':most_active_categories,
+                                                     'rooms':recent_rooms})
 
 
 
