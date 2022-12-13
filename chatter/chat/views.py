@@ -7,11 +7,12 @@ from .forms import ChatRoomForm,PrivateChatRoomForm
 from django.http import Http404
 from django.contrib.auth import get_user_model
 from operator import attrgetter
+from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 
 
 # Public Room Views
 class DefaultChatRoomList(View):
-    '''Class to create a view to display all available chat rooms'''
+    '''Class to create a view to display some summary about existing rooms'''
 
     model = models.ChatRoom
     template = 'chat/index.html'
@@ -24,6 +25,46 @@ class DefaultChatRoomList(View):
         return render(request,self.template, context={'rooms': room_list,
                                                       'top_rooms': room_top_users,
                                                       'recent_rooms': recent_rooms})
+
+class AllRoomsView(View):
+    '''Class to display all rooms'''
+    page_kwarg = 'page'
+    paginated_by = 8
+    template_name = 'chat/all_rooms.html'
+    model = models.ChatRoom
+
+    def get(self,request):
+        all_rooms = self.model.objects.all()
+        top_rooms = sorted(all_rooms,key=lambda x: x.onlines.count(), reverse=True)
+        paginator = Paginator(all_rooms,self.paginated_by)
+        page_number = request.GET.get(self.page_kwarg)
+        try:
+            page = paginator.page(page_number)
+        except PageNotAnInteger:
+            page = paginator.page(1)
+        except EmptyPage:
+            page = paginator.page(paginator.num_pages)
+
+        if page.has_previous():
+            previous_page_url = f"?{self.page_kwarg}={page.next_page_number()}"
+        else:
+            previous_page_url = None
+
+        if page.has_next():
+            next_page_url = f"?{self.page_kwarg}={page.next_page_number()}"
+        else:
+            next_page_url = None
+
+        context = {
+            'paginator' : paginator,
+            'previous_page_url' : previous_page_url,
+            'next_page_url' : next_page_url,
+            'rooms' : page
+        }
+
+        return render(request,self.template_name,context=context)
+
+
 
 
 class RoomDetailsView(View):
