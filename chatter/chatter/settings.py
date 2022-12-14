@@ -147,3 +147,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = reverse_lazy('dj-auth:login')
 LOGOUT_URL = reverse_lazy('dj-auth:logout')
 LOGIN_REDIRECT_URL = reverse_lazy('messenger')
+
+
+#Email settings
+EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+SERVER_EMAIL='contact@chatter.com'
+DEFAULT_FROM_EMAIL='no_reply@chatter.com'
+EMAIL_SUBJECT_PREFIX='[Chatter]'
+MANAGERS=(
+    ('Us','ourselves@chatter.com'),
+)
