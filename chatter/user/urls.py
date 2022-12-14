@@ -11,7 +11,7 @@ app_name='user'
 password_urlpatterns = [
     path('change_password/', auth_views.PasswordChangeView.as_view(template_name='user/change_password.html',success_url=reverse_lazy('dj-auth:password_change_done')),name='password_change'),
     path('change_password/done/', auth_views.PasswordChangeDoneView.as_view(template_name='user/password_change_done.html', extra_context ={'form':AuthenticationForm}),name='password_change_done'),
-    path('reset_password/', auth_views.PasswordResetView.as_view(template_name ='user/reset_password.html',succes_url=reverse_lazy('dj-auth:password_reset_done'),subject_template_name='user/password_reset_email.txt',subject_template_name='user/password_email_title.txt), name='password_reset'),
+    path('reset_password/', auth_views.PasswordResetView.as_view(template_name ='user/reset_password.html',succes_url=reverse_lazy('dj-auth:password_reset_done'),subject_template_name='user/password_reset_email.txt',subject_template_name='user/password_email_title.txt'), name='password_reset'),
     path('reset_password/done/', auth_views.PasswordResetDoneView.as_view(template_name='user/password_reset_done.html',name='password_reset_done')),
     re_path(r'^reset_password/'
             r'(?P<uidb64>[0-9A-Za-z-\-]+)/'
