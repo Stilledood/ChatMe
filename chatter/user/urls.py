@@ -10,7 +10,13 @@ app_name='user'
 
 password_urlpatterns = [
     path('change_password/', auth_views.PasswordChangeView.as_view(template_name='user/change_password.html',success_url=reverse_lazy('dj-auth:password_change_done')),name='password_change'),
-    path('change_password/done/', auth_views.PasswordChangeDoneView.as_view(template_name='user/password_change_done.html', extra_context ={'form':AuthenticationForm}),name='password_change_done')
+    path('change_password/done/', auth_views.PasswordChangeDoneView.as_view(template_name='user/password_change_done.html', extra_context ={'form':AuthenticationForm}),name='password_change_done'),
+    path('reset_password/', auth_views.PasswordResetView.as_view(template_name ='user/reset_password.html',succes_url=reverse_lazy('dj-auth:password_reset_done'),subject_template_name='user/password_reset_email.txt',subject_template_name='user/password_email_title.html'), name='password_reset'),
+    path('reset_password/done/', auth_views.PasswordResetDoneView.as_view(template_name='user/password_reset_done.html',name='password_reset_done')),
+    re_path(r'^reset_password/'
+            r'(?P<uidb64>[0-9A-Za-z-\-]+)/'
+            r'(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$',auth_views.PasswordResetConfirmView.as_view(template_name='user/password_reset_confirm.html',success_url=reverse_lazy('dj-auth:password_reset_complete')),name='password_reset_confirm'),
+    path('reset_password/complete/',auth_views.PasswordResetCompleteView.as_view(template_name='user/password_reset_complete.html',extra_context={'form':AuthenticationForm}),name='password_reset_complete'),
 ]
 urlpatterns = [
     re_path(r'^$', RedirectView.as_view(pattern_name='dj-auth:login', permanent=False)),
@@ -18,6 +24,7 @@ urlpatterns = [
     re_path(r'^logout/$', auth_views.LogoutView.as_view(template_name='user/logout.html', extra_context={'form':AuthenticationForm}),name ='logout'),
     re_path(r'^(?P<username>[\w\-]+)/$',UserProfile.as_view(),name='profile'),
     path('password/',include(password_urlpatterns)),
+
 
 ]
 
