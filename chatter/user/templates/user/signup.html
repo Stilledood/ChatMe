@@ -1,0 +1,10 @@
+{% extends parent_template|default:'user/base_user.html' %}
+{% block content %}
+<br>
+<br>
+<form method="post" action="{% url 'dj-auth:signup' %}">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit">Sign Up</button>
+</form>
+{% endblock content %}
