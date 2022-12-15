@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from .forms import SignUpForm, ProfileForm
 from .models import Profile
 from django.contrib.auth import get_user, logout
@@ -7,6 +7,7 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
+from django.template.response import TemplateResponse
 
 
 
@@ -18,8 +19,10 @@ class UserProfile(View):
     template = 'user/profile.html'
 
     def get(self,request,username):
-        profile =  self.model.objects.get(username = username)
-        return render(request,self.template,context={'user':profile})
+
+        profile =  get_object_or_404(self.model,username=username)
+        print(profile)
+        return render(request,self.template,context={'profile':profile})
 
 
 class DisableUserAccount(View):
@@ -29,13 +32,13 @@ class DisableUserAccount(View):
     @method_decorator(login_required)
     @method_decorator(csrf_protect)
     def get(self,request):
-        return render(request,self.template_name)
+        return TemplateResponse(request,self.template_name)
 
-    @method_decorator(login_required)
     @method_decorator(csrf_protect)
+    @method_decorator(login_required)
     def post(self,request):
         user = request.user
-        user.set_unusable_password = True
+        user.set_unusable_password()
         user.is_active = False
         user.save()
         logout(request)
