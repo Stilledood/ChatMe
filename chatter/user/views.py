@@ -14,6 +14,7 @@ from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.utils.encoding import force_str,force_bytes
 from .tokens import account_activation
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 
 
 
@@ -76,13 +77,33 @@ class SingUpView(View):
                                            'token':account_activation.make_token(user)
                                        })
             user.email_user(subject,message)
-            messages.success('Please check your email')
+            messages.success(request,'Please check your email')
             return redirect('dj-auth:login')
         else:
             return render(request,self.template_name,context={'form':bound_form})
 
 
+class AccountActivationView(View):
+    '''Class to construct a view to activate user account'''
 
+
+    def get(self,request,uidb64,token,*args,**kwargs):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user_model = get_user_model()
+            user= user_model.objects.get(pk=uid)
+        except (TypeError,ValueError,OverflowError):
+            user =None
+
+        if user != None and account_activation.check_token(user,token):
+            user.is_active = True
+            user.profile.email_confirmed = True
+            user.save()
+            Profile.objects.update_or_create(user=user,defaults={''})
+            return redirect('dj-auth:login')
+        else:
+            messages.warning(request,'Confirmation link is no longer valid')
+            return redirect('dj-auth:signup')
 
 
 
