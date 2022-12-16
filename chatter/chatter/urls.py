@@ -20,7 +20,8 @@ from user import urls as user_urls
 from django.conf.urls.static import static
 from django.conf import settings
 
-
+admin.site.site_header = 'Chatter'
+admin.site.site_title = 'Chatter Site'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
