@@ -19,6 +19,7 @@ from chat import urls  as chat_urls
 from user import urls as user_urls
 from django.conf.urls.static import static
 from django.conf import settings
+from videochat import urls as videochat_urls
 
 admin.site.site_header = 'Chatter'
 admin.site.site_title = 'Chatter Site'
@@ -26,7 +27,8 @@ admin.site.site_title = 'Chatter Site'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(chat_urls)),
-    path('user/',include(user_urls, namespace='dj-auth'))
+    path('user/',include(user_urls, namespace='dj-auth')),
+    path('videochat/',include(videochat_urls)),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT )
