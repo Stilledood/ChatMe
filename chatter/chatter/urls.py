@@ -28,7 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(chat_urls)),
     path('user/',include(user_urls, namespace='dj-auth')),
-    path('videochat/',include(videochat_urls)),
+    path('',include(videochat_urls)),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT )

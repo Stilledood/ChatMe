@@ -6,62 +6,79 @@ from django.http.response import JsonResponse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .agora_key.RtcTokenBuilder import RtcTokenBuilder,Role_Attendee
-from  pusher import Pusher
+from .agora_key.RtcTokenBuilder import RtcTokenBuilder
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import random
 
-#Instantiate a pusher client
-pusher_client = Pusher(app_id=os.environ.get('PUSHER_APP_ID'),
-                key=os.environ.get('PUSHER_KEY'),
-                secret=os.environ.get('PUSHER_SECRET'),
-                ssl=True,
-                cluster=os.environ.get('PUSHER_CLUSTER'))
-
-@login_required(login_url='dj-auth:login')
-def index(request):
-    User = get_user_model()
-    all_users = User.objects.filter(id=request.user.id).only('id','username')
-    return render(request,'videochat/index.html',context={'all_users':all_users})
-
-def pusher_auth(request):
-    payload = pusher_client.authenticate(
-        channel=request.POST['channel_name'],
-        socket_id=request.post['socket_id'],
-        custom_data={
-            'user_id': request.user.id,
-            'user_info': {
-                'id':request.user.id,
-                'name': request.user.username
-            }
-        }
-    )
-    return  JsonResponse(payload)
-
-def generate_token(request):
-    appID = os.environ.get('AGORA_APP_ID')
-    appCertificate = os.environ.get('AGORA_APP_CERTIFICATE')
-    channelName = json.loads(request.body.decode('utf-8'))['channelName']
-    userAccount = request.user.username
-    expiraTimeInSeconds = 3600
-    currentTimeStamp = int(time.time())
-    privilegeExpiredTs = currentTimeStamp + expiraTimeInSeconds
-    token = RtcTokenBuilder.buildTokenWithAccount(appId=appID, appCertificate=appCertificate, channelName=channelName, account=userAccount, Role_Attendee, privilegeExpiredTs=privilegeExpiredTs)
-    return JsonResponse({'token':token, 'appID':appID})
+from videochat.models import PrivateVideoChatRoom
 
 
-def call_user(request):
-    body = json.loads(request.body.decode('utf-8'))
-    user_to_call = body['user_to_call']
-    caller = request.user.id
-    channel_name = body['channel_name']
+def getToken(request):
+    appId = settings.AGORA_APP_ID
+    print(appId)
+    appCertificate = settings.AGORA_APP_CERTIFICATE
+    channelName = request.GET.get('channel')
+    uid =  random.randint(1,230)
+    expirationTimeInSeconds = 3600 * 24
+    currentTimeStamp = time.time()
+    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
+    role = 1
 
-    pusher_client.trigger(
-        'presence-online-channel',
-        'make-agora-call',
-        {
-            'userToCall': user_to_call,
-            'channelName': channel_name,
-            'from': caller
-        },
-    )
-    return JsonResponse({'message':'call has been placed'})
+    token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
+    return JsonResponse ({'token':token, 'uid':uid}, safe=False)
 
+@login_required
+def videochatlobbyviews(request):
+    return render(request, 'videochat/videochatlobby.html')
+
+@login_required
+def videochatroomviews(request):
+    return render(request, 'videochat/videochatroom.html')
+
+# View to initiate a direct videochat session with current user information.
+# The initiator of a direct videochat will always be set to the videouser1 field of each Private VideoChat Room object.
+# If the current user == user2 of the object they will access that existing room.
+@login_required
+def private_video_chat_room(request, pk):
+
+    user_model = get_user_model()
+    current_user = request.user
+    other_user = user_model.objects.get(pk=pk)
+
+    # If Videochat does not exist, create one with current user being videouser1.
+    if not PrivateVideoChatRoom.objects.filter(videouser1=request.user, videouser2=other_user).exists() and not PrivateVideoChatRoom.objects.filter(videouser2=request.user, videouser1=other_user).exists():
+        PrivateVideoChatRoom.objects.create(videouser1=request.user, videouser2=other_user)
+
+        user1videochat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
+
+        return render(request, 'videochat/privatevideo1.html', {
+            'user1videochat': user1videochat,
+        })
+
+    # If chat does exist with the current user == videouser1 and the other_user == videouser2, join that chatroom.
+    if PrivateVideoChatRoom.objects.filter(videouser1=request.user, videouser2=other_user).exists():
+
+        direct_video_chat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
+
+        if request.user == direct_video_chat.videouser1:
+            user1videochat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
+
+            return render(request, 'videochat/privatevideo1.html', {
+                'user1videochat': user1videochat,
+            })
+
+    # If chat does exist with the current user == videouser2 and the other_user == videouser1, join that chatroom.
+    if PrivateVideoChatRoom.objects.filter(videouser2=request.user, videouser1=other_user).exists():
+
+        direct_video_chat = PrivateVideoChatRoom.objects.get(videouser2=request.user, videouser1=other_user)
+
+        if request.user == direct_video_chat.videouser2:
+            user2videochat = PrivateVideoChatRoom.objects.get(videouser1=other_user, videouser2=request.user)
+
+            return render(request, 'videochat/privatevideo2.html', {
+                'user2videochat': user2videochat,
+            })
+
+    else:
+        raise Http404('User not authorized for this videochat room.')

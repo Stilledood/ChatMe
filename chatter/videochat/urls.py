@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
-
-urlpatterns =[
-    path('', views.index, name ='videochat_lobby'),
-    path('pusher/auth/', views.pusher_auth, name= 'pusher_auth'),
-    path('token/', views.generate_token , name = 'videochat-token')
+app_name = 'videochat'
+urlpatterns = [
+    path('videochatlobby/', views.videochatlobbyviews, name='lobby'),
+    path('videochatroom/', views.videochatroomviews, name='room'),
+    path('get_token/', views.getToken),
+    path('privatevideochat/<int:pk>/', views.private_video_chat_room, name='private-video-chat'),
 ]
