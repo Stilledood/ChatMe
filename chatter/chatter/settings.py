@@ -12,9 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 from django.urls import reverse_lazy
-import dotenv
-dotenv.load_dotenv()
 
+
+AGORA_APP_ID = "03dd86e8444b4b8b98cd6b963c9b3a96"
+AGORA_APP_CERTIFICATE = "5ade5ddf4cc944cab94803737ab5d637"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

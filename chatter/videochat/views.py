@@ -11,7 +11,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 import random
 
-from videochat.models import PrivateVideoChatRoom
+from .models import RoomMember
 
 
 def getToken(request):
@@ -21,64 +21,69 @@ def getToken(request):
     channelName = request.GET.get('channel')
     uid =  random.randint(1,230)
     expirationTimeInSeconds = 3600 * 24
-    currentTimeStamp = time.time()
+    currentTimeStamp = int(time.time())
     privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
     role = 1
 
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
     return JsonResponse ({'token':token, 'uid':uid}, safe=False)
 
-@login_required
+
 def videochatlobbyviews(request):
     return render(request, 'videochat/videochatlobby.html')
 
-@login_required
+
 def videochatroomviews(request):
     return render(request, 'videochat/videochatroom.html')
 
 # View to initiate a direct videochat session with current user information.
 # The initiator of a direct videochat will always be set to the videouser1 field of each Private VideoChat Room object.
 # If the current user == user2 of the object they will access that existing room.
-@login_required
-def private_video_chat_room(request, pk):
+def getToken(request):
+    appId = "YOUR APP ID"
+    appCertificate = "YOUR APP CERTIFICATE"
+    channelName = request.GET.get('channel')
+    uid = random.randint(1, 230)
+    expirationTimeInSeconds = 3600
+    currentTimeStamp = int(time.time())
+    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
+    role = 1
 
-    user_model = get_user_model()
-    current_user = request.user
-    other_user = user_model.objects.get(pk=pk)
+    token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
-    # If Videochat does not exist, create one with current user being videouser1.
-    if not PrivateVideoChatRoom.objects.filter(videouser1=request.user, videouser2=other_user).exists() and not PrivateVideoChatRoom.objects.filter(videouser2=request.user, videouser1=other_user).exists():
-        PrivateVideoChatRoom.objects.create(videouser1=request.user, videouser2=other_user)
+    return JsonResponse({'token': token, 'uid': uid}, safe=False)
 
-        user1videochat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
 
-        return render(request, 'videochat/privatevideo1.html', {
-            'user1videochat': user1videochat,
-        })
+@csrf_exempt
+def createMember(request):
+    data = json.loads(request.body)
+    member, created = RoomMember.objects.get_or_create(
+        name=data['name'],
+        uid=data['UID'],
+        room_name=data['room_name']
+    )
 
-    # If chat does exist with the current user == videouser1 and the other_user == videouser2, join that chatroom.
-    if PrivateVideoChatRoom.objects.filter(videouser1=request.user, videouser2=other_user).exists():
+    return JsonResponse({'name':data['name']}, safe=False)
 
-        direct_video_chat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
 
-        if request.user == direct_video_chat.videouser1:
-            user1videochat = PrivateVideoChatRoom.objects.get(videouser1=request.user, videouser2=other_user)
+def getMember(request):
+    uid = request.GET.get('UID')
+    room_name = request.GET.get('room_name')
 
-            return render(request, 'videochat/privatevideo1.html', {
-                'user1videochat': user1videochat,
-            })
+    member = RoomMember.objects.get(
+        uid=uid,
+        room_name=room_name,
+    )
+    name = member.name
+    return JsonResponse({'name':member.name}, safe=False)
 
-    # If chat does exist with the current user == videouser2 and the other_user == videouser1, join that chatroom.
-    if PrivateVideoChatRoom.objects.filter(videouser2=request.user, videouser1=other_user).exists():
-
-        direct_video_chat = PrivateVideoChatRoom.objects.get(videouser2=request.user, videouser1=other_user)
-
-        if request.user == direct_video_chat.videouser2:
-            user2videochat = PrivateVideoChatRoom.objects.get(videouser1=other_user, videouser2=request.user)
-
-            return render(request, 'videochat/privatevideo2.html', {
-                'user2videochat': user2videochat,
-            })
-
-    else:
-        raise Http404('User not authorized for this videochat room.')
+@csrf_exempt
+def deleteMember(request):
+    data = json.loads(request.body)
+    member = RoomMember.objects.get(
+        name=data['name'],
+        uid=data['UID'],
+        room_name=data['room_name']
+    )
+    member.delete()
+    return JsonResponse('Member deleted', safe=False)

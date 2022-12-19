@@ -1,161 +1,147 @@
-const APP_ID = "03dd86e8444b4b8b98cd6b963c9b3a96";
-const CHANNEL = sessionStorage.getItem('room');
+onst CHANNEL = sessionStorage.getItem('room')
 const TOKEN = sessionStorage.getItem('token')
-let UID = sessionStorage.getItem('UID');
-let NAME = sessionStorage.getItem('name')
-const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+let UID = Number(sessionStorage.getItem('UID'))
+let USERNAME = sessionStorage.getItem('username')
 
-let localTracks = [];
-let remoteUsers = {};
+const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
+let localTracks = []
+let remoteUsers = {}
 
-let getCookie = (name)=>{
-  var cookieValue = null;
-  if(document.cookie && document.cookie !== ''){
-    var cookies = document.cookie.split(";");
-    for(var i=0; i<cookies.length; i++){
-      var cookie = cookies[i].trim();
-      if(cookie.substring(0, name.length+1)===(name+'=')){
-        cookieValue = decodeURIComponent(cookie.substring(name.length+1));
-        break;
-      }
+let joinDisplayLocalStream = async () => {
+
+    // Show the room name
+    document.getElementById('room-name').innerText = CHANNEL
+
+
+
+    // When the user published their trackc, we are going to call method handleUserJoined
+    client.on('user-published', handleUserJoined)
+    client.on('user-left', handleUserLeft)
+
+    // Check if we have token, room, session
+    try {
+        // join the channel
+        await client.join(APP_ID, CHANNEL, TOKEN, UID)
+    } catch (error) {
+        console.error(error)
+        window.open('/', '_self')
     }
-  }
-  return cookieValue;
-}
 
-let joinAndDisplayLocalStream = async () => {
-  document.getElementById('room-name').innerText = CHANNEL
-  client.on("user-published", handleUserJoined);
-  client.on("user-left", handleUserLeft);
+    // get audio and video tracks
+    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
-  try{
-    UID = await client.join(APP_ID, CHANNEL, TOKEN, UID);
-  }catch(error){
-    console.error(error)
-    //window.open('/', '_self')
-  }
-  localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+    // get username
+    let user = await createUser()
+    console.log('user:', user)
 
-  let member = await createMember()
-
-  let player = `<div class="video-container" id="user-container-${UID}">
-                    <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
+    // create a player
+    let player = `<div class="video-container" id="user-container-${UID}">
+                    <div class="username-wrapper">
+                        <span class="user-name">${user.username}</span>
+                    </div>
                     <div class="video-player" id="user-${UID}"></div>
-                </div>`;
+                </div>`
 
-  document
-    .getElementById("video-streams")
-    .insertAdjacentHTML("beforeend", player);
+    // append player
+    document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
 
-  localTracks[1].play(`user-${UID}`);
+    // Create a video tag and start playing video inside tag
+    localTracks[1].play(`user-${UID}`)
 
-  await client.publish([localTracks[0], localTracks[1]]);
-};
+    // publish an audio ([localTracks[0]]) and video track ([localTracks[1]])
+    await client.publish([localTracks[0], localTracks[1]])
+}
 
 let handleUserJoined = async (user, mediaType) => {
-  remoteUsers[user.uid] = user;
-  await client.subscribe(user, mediaType);
+    remoteUsers[user.UID] = user
+    await client.subscribe(user, mediaType)
+    if (mediaType === 'video') {
+        let player = document.getElementById(`user-container-${user.uid}`)
+        // get the video
+        if (player != null) {
+            player.remove()
+        }
+        let anotherUser = await getAnotherUser(user)
 
-  if (mediaType === "video") {
-    // Make sure user doesn't exists
-    let player = document.getElementById("user-container-${user.uid}");
-    if (player != null) {
-      player.remove();
+        // append video to the DOM and play it
+        player = `<div class="video-container" id="user-container-${user.uid}">
+                        <div class="username-wrapper">
+                            <span class="user-name">${anotherUser.username}</span>
+                        </div>
+                        <div class="video-player" id="user-${user.uid}"></div>
+                    </div>`
+        document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
+        user.videoTrack.play(`user-${user.uid}`)
     }
+    // play audio
+    if (mediaType === 'audio') {
+        user.audioTrack.play()
+    }
+}
 
-    let member = await getMember(user)
-
-    player = `<div class="video-container" id="user-container-${user.uid}">
-    <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
-    <div class="video-player" id="user-${user.uid}"></div>
-</div>`;
-
-    document
-      .getElementById("video-streams")
-      .insertAdjacentHTML("beforeend", player);
-    user.videoTrack.play(`user-${user.uid}`);
-  }
-  if (mediaType === "audio") {
-    user.audioTrack.play();
-  }
-};
 
 let handleUserLeft = async (user) => {
-
-  document.getElementById(`user-container-${user.uid}`).remove()
-  delete remoteUsers[user.uid]
-
+    delete remoteUsers[user.uid]
+    // remove user from the DOM
+    document.getElementById(`user-container-${user.uid}`).remove()
 }
 
-let leaveAndRemoveLocalStream = async () => {
-  for (let i=0; localTracks.length>i; i++){
-    localTracks[i].stop()
-    localTracks[i].close()
-  }
-  await client.leave()
-  deleteMember()
-  window.open('/', '_self')
+
+let leaveStream = async () => {
+    for (let i = 0; localTracks.length > i; i++) {
+        // Use close() after stop(), because the track will start again
+        localTracks[i].stop()
+        localTracks[i].close()
+    }
+    await client.leave()
+    window.open('/', '_self')
 }
 
-let toggleCamera = async (e) => {
-  //console.log('Mute/Unmute')
-  if(localTracks[1].muted){
-    await localTracks[1].setMuted(false)
-    e.target.style.backgroundColor = "#fff"
-  } else{
-    await localTracks[1].setMuted(true)
-    e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-
-  }
+let offMicrophone = async (e) => {
+    if (localTracks[0].muted) {
+        await localTracks[0].setMuted(false)
+        e.target.style.backgroundColor = '#ffffff'
+    } else {
+        await localTracks[0].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 51, 63)'
+    }
 }
 
-let toggleMicrophone = async (e) => {
-  if(localTracks[0].muted){
-    await localTracks[0].setMuted(false)
-    e.target.style.backgroundColor = "#fff"
-  } else{
-    await localTracks[0].setMuted(true)
-    e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)';
-
-  }
+let offCamera = async (e) => {
+    // In localTracks videoTrack = 1
+    if (localTracks[1].muted) {
+        await localTracks[1].setMuted(false)
+        e.target.style.backgroundColor = '#ffffff'
+    } else {
+        await localTracks[1].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 51, 63)'
+    }
 }
 
-var csrftoken = getCookie('csrftoken');
-
-let createMember = async () => {
-  let response = await fetch('/create_member/', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      "X-CSRFToken": csrftoken
-    },
-    body:JSON.stringify({'name':NAME, 'room_name':CHANNEL, 'UID':UID})
-  })
-  let member = await response.json()
-  return member
+let createUser = async () => {
+    let response = await fetch('/new-user/', {
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            'username': USERNAME,
+            'room_name': CHANNEL,
+            'UID': UID
+        })
+    })
+    let user = await response.json()
+    return user
 }
 
-let getMember = async (user) => {
-  let response = await fetch(`/get_member/?UID=${user.uid}&room_name=${CHANNEL}`)
-  let member = await response.json()
-  return member
+let getAnotherUser = async (user) => {
+    let response = await fetch(`/get-another-user/?UID=${user.uid}&room_name=${CHANNEL}`)
+    let member = await response.json()
+    return member
 }
 
-let deleteMember = async (user) => {
-  let response = await fetch('/delete_member/', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      "X-CSRFToken": csrftoken,
-    },
-    body:JSON.stringify({'name':NAME, 'room_name':CHANNEL, 'UID':UID})
-  })
-  let member = await response.json()
-}
 
-joinAndDisplayLocalStream();
-
-document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream)
-document.getElementById('camera-btn').addEventListener('click', toggleCamera)
-document.getElementById('microphone-btn').addEventListener('click', toggleMicrophone)
-window.addEventListener('befereunload', deleteMember)
+joinDisplayLocalStream()
+document.getElementById('leave-button').addEventListener('click', leaveStream)
+document.getElementById('microphone-button').addEventListener('click', offMicrophone)
+document.getElementById('video-button').addEventListener('click', offCamera)
