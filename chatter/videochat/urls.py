@@ -6,5 +6,5 @@ urlpatterns = [
     path('room/', views.videochatroomviews, name='room'),
     path('get_token/', views.getToken),
     path('get_member/', views.getMember),
-    path('delete_member/' views.deleteMember)
+    path('delete_member/', views.deleteMember)
 ]

@@ -40,8 +40,8 @@ def videochatroomviews(request):
 # The initiator of a direct videochat will always be set to the videouser1 field of each Private VideoChat Room object.
 # If the current user == user2 of the object they will access that existing room.
 def getToken(request):
-    appId = "YOUR APP ID"
-    appCertificate = "YOUR APP CERTIFICATE"
+    appId = '03dd86e8444b4b8b98cd6b963c9b3a96'
+    appCertificate = '5ade5ddf4cc944cab94803737ab5d637'
     channelName = request.GET.get('channel')
     uid = random.randint(1, 230)
     expirationTimeInSeconds = 3600
