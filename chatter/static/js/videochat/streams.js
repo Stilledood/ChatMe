@@ -1,6 +1,6 @@
 const APP_ID = '03dd86e8444b4b8b98cd6b963c9b3a96'
 const CHANNEL = 'main'
-const TOKEN = '007eJxTYKir5zRxv6brOmXu1PTG996fTjGoTMk+qiqffKXcY0cYt4YCg4FxSoqFWaqFiYlJkkmSRZKlRXKKWZKlmXGyZZJxoqUZ48eFyQ2BjAy6XRMZGRkgEMRnYchNzMxjYAAAuuAdeA=='
+const TOKEN = '007eJxTYNgj2TH5fePLReXWT1V2f0icm6aTcrjh/50uw39Ngm8kV3crMBgYp6RYmKVamJiYJJkkWSRZWiSnmCVZmhknWyYZJ1qa3fBanNwQyMiQtTCbgREKQXwWhtzEzDwGBgAXHiHx'
 let UID;
 
 const client = AgoraRTC.createClient({mode:'rtc', codec:'vp8'})
@@ -62,9 +62,21 @@ let leaveAndRemoveLocalStream = async() =>{
     window.open('/','_self')
 };
 
+let toggleCamera =  async() =>{
+    if(localTracks[1].muted){
+        await localTracks[1].setMuted(false)
+        e.target.style.backgroundColor = '#fff'
+    }else{
+        await localTracks[1].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
+    }
+
+};
+
 joinAndDisplayLocalStream()
 
 document.getElementById('leave-btn').addEventListener('click',leaveAndRemoveLocalStream)
+document.getElementById('camera-btn').addEventListener('click',toggleCamera)
 
 
 
