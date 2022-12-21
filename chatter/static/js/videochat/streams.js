@@ -62,7 +62,7 @@ let leaveAndRemoveLocalStream = async() =>{
     window.open('/','_self')
 };
 
-let toggleCamera =  async() =>{
+let toggleCamera =  async(e) =>{
     if(localTracks[1].muted){
         await localTracks[1].setMuted(false)
         e.target.style.backgroundColor = '#fff'
@@ -73,10 +73,20 @@ let toggleCamera =  async() =>{
 
 };
 
+let toogleMicrophone = async(e) =>{
+    if(localTracks[0].muted){
+        await localTracks[0].setMuted(false)
+        e.target.style.backgroundColor = '#fff'
+    }else{
+        await localTracks[0].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
+    }
+};
+
 joinAndDisplayLocalStream()
 
 document.getElementById('leave-btn').addEventListener('click',leaveAndRemoveLocalStream)
 document.getElementById('camera-btn').addEventListener('click',toggleCamera)
-
+document.getElementById('mic-btn').addEventListener('click', toogleMicrophone)
 
 
