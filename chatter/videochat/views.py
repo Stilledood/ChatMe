@@ -21,7 +21,7 @@ def getToken(request):
     channelName = request.GET.get('channel')
     uid =  random.randint(1,230)
     expirationTimeInSeconds = 3600 * 24
-    currentTimeStamp = int(time.time())
+    currentTimeStamp = time.time()
     privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
     role = 1
 
