@@ -22,7 +22,7 @@
 
                 <div class="form-field">
                     <label>Name</label>
-                    <input type="text" name="room" placeholder="Enter username..."/>
+                    <input type="text" name="name" placeholder="Enter username..."/>
                 </div>
 
                 <div class="form-field">
@@ -37,6 +37,7 @@
         e.preventDefault()
 
         let room = e.target.room.value.toUpperCase()
+        let name = e.target.name.value
 
         let response = await fetch(`/videochat/get_token/?channel=${room}`)
         let data = await response.json()
@@ -46,6 +47,7 @@
         sessionStorage.setItem('UID',UID)
         sessionStorage.setItem('token',token)
         sessionStorage.setItem('room',room)
+        sessionStorage.setItem('name',name)
 
 
         window.open('/videochat/room/','_self')
